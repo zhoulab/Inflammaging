@@ -1,0 +1,5 @@
+This folder is for results that are potentially important, i.e. support a conclustion that represent a major finding or serves to move the project forward. 
+
+Please refrain from putting random outputs in this folder.
+
+Subfolders can be made for specific projects/analyses. 
