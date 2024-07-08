@@ -1,7 +1,7 @@
 #############################################set working directory and library package################################################################################################
 
 setwd("/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/")
-#load("GSE107451_head_ALL_57k.RData")
+load("GSE107451_head_ALL_57k.RData")
 
 
 library(Seurat)
@@ -18,6 +18,7 @@ library(EnhancedVolcano)
 library(ggrepel)
 library(gplots)
 #devtools::install_github("immunogenomics/presto")
+
 
 
 #############################################################################################################################################
@@ -354,6 +355,80 @@ View(t(percent_EXPR_III_markers))
 
 
 
+############################make a function to see number of cells in different Strains, Sex at different Ages####################################################################################################
+#This is for making the heatmap later, because for example, if there is no day 50 cell in DGRP-551 male, 
+#then the heatmap will not show expression as its pseudo-bulk expression will not be calculated
+
+
+count_cells_subset <- function(seurat_obj, strain = NULL, sex = NULL, age = NULL, cell_cluster = NULL) {
+  # Extract metadata from the Seurat object
+  meta_data <- seurat_obj@meta.data
+  
+  # Apply filters based on the provided parameters
+  if (!is.null(strain)) {
+    meta_data <- meta_data %>% filter(Genotype == strain)
+  }
+  if (!is.null(sex)) {
+    meta_data <- meta_data %>% filter(sex == sex)
+  }
+  if (!is.null(age)) {
+    meta_data <- meta_data %>% filter(Age == age)
+  }
+  if (!is.null(cell_cluster)) {
+    meta_data <- meta_data %>% filter(annotation == cell_cluster)
+  }
+  
+  # Count the number of cells for each combination of Strain, Sex, Age, and cell cluster
+  cell_counts <- meta_data %>%
+    group_by(Genotype, sex, Age, annotation) %>%
+    summarise(CellCount = n())
+  
+  return(cell_counts)
+  print(cell_counts,n=Inf)
+}
+
+# Example usage:
+# Assuming `seurat_obj` is your Seurat object
+# To get the number of cells for a specific strain, sex, age, and cell cluster:
+count_cells_subset(seurat_obj=ALL_HEAD_57k3,
+                                  strain = "DGRP-551",
+                                  sex = "female",
+                                  age = "50",
+                                  cell_cluster = "Plasmatocytes")
+
+
+# To get the number of cells for all combinations:
+print(
+  count_cells_subset(seurat_obj=ALL_HEAD_57k3),
+  n=Inf)
+
+cell_numbers <- print(
+  count_cells_subset(seurat_obj=ALL_HEAD_57k3),
+  n=Inf)
+
+#to see if the function generates correct number of cells
+#in plasmatocytes cluster, there are 35 cells in DGRP-551 female day 50; 
+
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&sex=="female"&Age=="50"&annotation=="Plasmatocytes")@meta.data
+)
+#35
+
+#in plasmatocytes cluster, there are 14 cells in DGRP-551 male day 50; 
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&sex=="male"&Age=="50"&annotation=="Plasmatocytes")@meta.data
+)
+#14
+
+## THe function provides correct number of cells based on different requirements
+
+#export the cell number into xlsx
+openxlsx::write.xlsx(cell_numbers,"cell_numbers.xlsx",rowNames=F)
+#############################################################################################################################################
+
+
+
+
 
 
 #############################################################################################################################################
@@ -442,7 +517,7 @@ write.xlsx(count_w1118_male,"count_w1118_male_HEAD57k.xlsx",rowNames=T)
 
 
 
-####################################################heatmap of pseudo bulk expression#########################################################################################
+####################################################heatmap of pseudo bulk expression to compare with our BulkRNAseq#########################################################################################
 
 make_heatmap <- function(EXPR_OBJ,GENELIST,TITLE) {
   tmp_hm <- EXPR_OBJ[rownames(EXPR_OBJ)%in%GENELIST,];
@@ -493,101 +568,6 @@ dev.off()
 
 
 
-
-
-#####################################################Perform DEseq on Pseudo count to compare with our data########################################################################################
-
-#DEseq function
-
-Do_DEseq <- 
-  function(Counts_matrix,
-           n_TR,                # 
-           n_CR,                #
-           p_thresh,            #
-           log2FC_thresh,       #
-           File_Title){        #
-    # make meta for DEseq (make a variable that tells DEseq which columns are controls and which are treatment ones)
-    
-    meta <- colnames(Counts_matrix)
-    
-    meta <- as.data.frame(meta)
-    
-    rownames(meta) <- meta[,1]
-    
-    meta$"Condition" <- c(rep("TR",n_TR),rep("CR",n_CR))
-    
-    
-    meta$Condition <- factor(meta$Condition,levels = c("CR","TR"))
-    
-    # make the dds object for DEseq
-    
-    dds <- DESeqDataSetFromMatrix(countData = Counts_matrix,
-                                  colData = meta,
-                                  design= ~ Condition)
-    dds <- DESeq(dds)
-    res <- results(dds, pAdjustMethod = "BH")
-    
-    #extracting result
-    res1 <- data.frame(res, stringsAsFactors = FALSE, check.names = FALSE)
-    
-    res1 <- na.omit(res1)
-    res1 <- res1[order(res1$padj, res1$log2FoldChange, decreasing = c(FALSE, TRUE)), ]
-    
-    
-    res1[which(res1$log2FoldChange >= log2FC_thresh & res1$pvalue < p_thresh),'sig'] <- 'up'
-    res1[which(res1$log2FoldChange <= -log2FC_thresh & res1$pvalue < p_thresh),'sig'] <- 'down'
-    res1[which(abs(res1$log2FoldChange) <= log2FC_thresh | res1$pvalue >= p_thresh),'sig'] <- 'none'
-    
-    
-    write.xlsx(res1, paste0(File_Title,".xlsx"),rowNames=T)
-    
-    write.xlsx(res1[res1$'sig'=='up',],paste0(File_Title,"_UP",p_thresh,".xlsx"),rowNames=T)
-    
-    write.xlsx(res1[res1$'sig'=='down',],paste0(File_Title,"_DOWN",p_thresh,".xlsx"),rowNames=T)
-  }
-
-
-
-##DGRP-551_female
-colnames(count_DGRP551_female)
-#30vs1
-Do_DEseq(Counts_matrix=count_DGRP551_female[,c(7,2)], 
-         #select the columns in readcount matrix and select treatment sample first then control samples
-         n_TR=1,   #number of treatment sample             
-         n_CR=1,    #number of control sample            
-         p_thresh=0.01,         #p value threshold   
-         log2FC_thresh=1,       #log2 fold change threshold
-         File_Title="DGRP551_female_30vs1")  #xlsx file title
-#50vs1
-Do_DEseq(Counts_matrix=count_DGRP551_female[,c(8,2)], 
-         #select the columns in readcount matrix and select treatment sample first then control samples
-         n_TR=1,   #number of treatment sample             
-         n_CR=1,    #number of control sample            
-         p_thresh=0.01,         #p value threshold   
-         log2FC_thresh=1,       #log2 fold change threshold
-         File_Title="DGRP551_female_50vs1")  #xlsx file title
-
-##DGRP-551_male
-#30vs1
-
-#50vs1
-
-##w1118_female
-#30vs1
-
-#50vs1
-
-##w1118_male
-#30vs1
-
-#50vs1
-
-
-
-#!!! DEseq cannot compare only two samples (1 replicate), have to use another tool for differential expression
-
-
-#############################################################################################################################################
 
 
 
@@ -1074,14 +1054,19 @@ table(str_split(colnames(count_Strain_Sex_Cellcluster_Age),pattern = "_",4,simpl
 
 
 ###########################make a function to plot heat map of genes at different Age in a specific cell cluster####################################################################################
-
-heatmap_specific_cluster <- function(EXPR_COUNT,GENELIST,STRAIN,SEX,CLUSTER_NAME,TITLE) {
+heatmap_specific_cluster <- function(EXPR_COUNT,GENELIST,STRAIN,SEX,CLUSTER_NAME,AGES,TITLE) {
   tmp_count <- EXPR_COUNT[,str_split(colnames(EXPR_COUNT),pattern = "_",4,simplify =T)[,1]==STRAIN];
   tmp_count <- tmp_count[,str_split(colnames(tmp_count),pattern = "_",4,simplify =T)[,2]==SEX];
   tmp_count <- tmp_count[,str_split(colnames(tmp_count),pattern = "_",4,simplify =T)[,3]==CLUSTER_NAME];
+  tmp_count <- tmp_count[,str_split(colnames(tmp_count),pattern = "_",4,simplify =T)[,4]%in%AGES];
   tmp_count2 <-tmp_count[rownames(tmp_count)%in%GENELIST,];
   
+  #remove rows where genes have all zero values across columns
+  tmp_count2 <- tmp_count2[rowSums(tmp_count2)!=0,];
+  #change column names to days
+  colnames(tmp_count2) <- paste0("Day ", AGES);
   tmp_count2 <- as.matrix(tmp_count2);
+  
   heatmap.2(x=tmp_count2,
             Colv=F,
             Rowv = F,
@@ -1099,6 +1084,7 @@ heatmap_specific_cluster <- function(EXPR_COUNT,GENELIST,STRAIN,SEX,CLUSTER_NAME
 #EXAMPLE of this function by ploting expression of III markers in plasmotocytes where most III markers increased 
 #on a holistic level of all clusters
 
+
 ###
 #Plasmatocytes_DGRP-551_female
 pdf("./Heatmap/Plasmatocytes_DGRP-551_female.pdf",width = 15,height = 10)
@@ -1107,6 +1093,7 @@ heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
                          STRAIN = "DGRP-551",
                          SEX = "female",
                          CLUSTER_NAME="Plasmatocytes",
+                         AGES = c("3","6","9","15","30","50"),
                          TITLE = "III_Markers in Plasmatocytes DGRP-551 female")
 dev.off()
 
@@ -1117,6 +1104,7 @@ heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
                          STRAIN = "DGRP-551",
                          SEX = "male",
                          CLUSTER_NAME="Plasmatocytes",
+                         AGES = c("3","6","15","30","50"),
                          TITLE = "III_Markers in Plasmatocytes DGRP-551 male")
 dev.off()
 
@@ -1127,6 +1115,7 @@ heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
                          STRAIN = "w1118",
                          SEX = "female",
                          CLUSTER_NAME="Plasmatocytes",
+                         AGES = c("3","6","9","15","30"),
                          TITLE = "III_Markers in Plasmatocytes w1118 female")
 dev.off()
 
@@ -1137,6 +1126,7 @@ heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
                          STRAIN = "w1118",
                          SEX = "male",
                          CLUSTER_NAME="Plasmatocytes",
+                         AGES = c("3","6","9","15","30"),
                          TITLE = "III_Markers in Plasmatocytes w1118 male")
 dev.off()
 ###
@@ -1150,6 +1140,188 @@ dev.off()
 ####
 
 #############################################################################################################################################
+
+
+
+
+
+##################################Based on copilot###########################################################################################################
+#make a function to plot heat map of genes at different Age in a specific cell cluster based on the pseudo-bulk expression of different Strain, Age, Sex, and Cell cluster
+
+# Function to obtain pseudo-bulk expression and plot heatmap
+analyze_seurat_object <- function(seurat_object, gene_list, strain, sex, cell_cluster) {
+  # Filter the Seurat object based on specified conditions
+  filtered_seurat <- subset(seurat_object,
+                            Strain == strain & Sex == sex & `Cell cluster` == cell_cluster)
+  
+  # Calculate pseudo-bulk expression
+  pseudo_bulk_expression <- aggregateexpression(filtered_seurat)
+  
+  # Subset the expression matrix to include only selected genes
+  expression_matrix <- t(as.matrix(pseudo_bulk_expression))
+  expression_matrix <- expression_matrix[gene_list, ]
+  
+  # Create a heatmap
+  heatmap_data <- as.data.frame(expression_matrix)
+  colnames(heatmap_data) <- rownames(expression_matrix)
+  heatmap_data$Age <- filtered_seurat$Age
+  
+  # Plot the heatmap
+  library(ggplot2)
+  ggplot(heatmap_data, aes(x = Age, y = rownames(heatmap_data), fill = .)) +
+    geom_tile() +
+    scale_fill_gradient(low = "white", high = "blue") +
+    labs(title = paste("Heatmap of Gene Expression (", strain, ", ", sex, ", ", cell_cluster, ")", sep = ""),
+         x = "Age", y = "Genes") +
+    theme_minimal()
+}
+
+# Example usage:
+seurat_object <- Read10X(data.dir = "path/to/your/10x_data")  # Load your Seurat object
+gene_list_of_interest <- c("Gene1", "Gene2", "Gene3")  # Specify your gene list
+analyze_seurat_object(seurat_object, gene_list_of_interest,
+                      strain = "StrainA", sex = "Male", cell_cluster = "Cluster1")
+#############################################################################################################################################
+
+
+
+
+
+
+##################################Based on chatgpt###########################################################################################################
+#make a function to plot heat map of genes at different Age in a specific cell cluster based on the pseudo-bulk expression of different Strain, Age, Sex, and Cell cluster
+
+library(Seurat)
+library(pheatmap)
+library(dplyr)
+library(tidyr)
+
+plot_heatmap_genes <- function(seurat_obj, genelist, specific_age, cell_cluster, specific_strain, specific_sex) {
+  # Step 1: Obtain the pseudo-bulk expression
+  get_pseudo_bulk <- function(seurat_obj) {
+    # Aggregate expression based on metadata
+    pseudo_bulk <- AggregateExpression(seurat_obj, 
+                                       group.by = c("Strain", "Sex", "Age", "cell_cluster"), 
+                                       assays = "RNA")
+    return(pseudo_bulk$RNA)
+  }
+  
+  # Step 2: Subset pseudo-bulk expression matrix for the specified cell cluster, strain, and sex
+  subset_pseudo_bulk <- function(pseudo_bulk, specific_age, cell_cluster, specific_strain, specific_sex) {
+    # Convert the Seurat aggregated matrix to a data frame for easier subsetting
+    pseudo_bulk_df <- as.data.frame(t(pseudo_bulk))
+    pseudo_bulk_df <- rownames_to_column(pseudo_bulk_df, var = "CellCluster")
+    
+    # Filter based on specific cell cluster, strain, sex, and age
+    filtered_df <- pseudo_bulk_df %>%
+      filter(grepl(cell_cluster, CellCluster),
+             grepl(specific_strain, CellCluster),
+             grepl(specific_sex, CellCluster),
+             grepl(paste0("_", specific_age, "_"), CellCluster))
+    
+    # Retain only the genes of interest
+    filtered_df <- filtered_df[, c("CellCluster", genelist)]
+    
+    # Set the row names as the CellCluster
+    rownames(filtered_df) <- filtered_df$CellCluster
+    filtered_df <- filtered_df[, -1] # Remove CellCluster column
+    
+    return(filtered_df)
+  }
+  
+  # Step 3: Plot heatmap for the filtered pseudo-bulk data
+  plot_heatmap <- function(filtered_df) {
+    pheatmap(as.matrix(filtered_df), cluster_rows = TRUE, cluster_cols = TRUE,
+             main = paste("Heatmap of genes in cell cluster", cell_cluster, 
+                          "for Strain:", specific_strain, 
+                          "Sex:", specific_sex, 
+                          "Ages:", paste(specific_age, collapse=", ")))
+  }
+  
+  # Obtain the pseudo-bulk expression
+  pseudo_bulk <- get_pseudo_bulk(seurat_obj)
+  
+  # Subset the pseudo-bulk expression matrix
+  filtered_df <- subset_pseudo_bulk(pseudo_bulk, specific_age, cell_cluster, specific_strain, specific_sex)
+  
+  # Plot the heatmap
+  plot_heatmap(filtered_df)
+}
+
+# Example usage:
+# Assuming `seurat_obj` is your Seurat object and you are interested in genes "Gene1", "Gene2", and "Gene3"
+# and you want to visualize data for cell cluster "Cluster1", strain "Strain1", sex "Male", and ages 3 and 6
+
+plot_heatmap_genes(seurat_obj = ALL_HEAD_57k3,
+                   genelist = III_Marker_Genes,
+                   specific_age = c(3, 6, 9, 15, 30, 50),
+                   cell_cluster = "Plasmatocytes",
+                   specific_strain = "DGRP-551",
+                   specific_sex = "female"
+                   )
+
+#############################################################################################################################################
+
+
+
+
+###################################I asked chatgpt to optmize my function##########################################################################################################
+
+library(dplyr)
+library(pheatmap)
+
+heatmap_specific_cluster <- function(EXPR_COUNT, GENELIST, STRAIN, SEX, CLUSTER_NAME, TITLE) {
+  # Extract metadata from column names
+  metadata <- str_split(colnames(EXPR_COUNT),pattern = "_",4,simplify =T)
+  colnames(metadata) <- c("Strain", "Sex", "Cluster")
+  
+  # Combine EXPR_COUNT and metadata into a single data frame
+  expr_data <- as.data.frame(EXPR_COUNT)
+  expr_data <- bind_cols(metadata, expr_data)
+  
+  # Filter data based on the specified STRAIN, SEX, and CLUSTER_NAME
+  filtered_data <- expr_data %>%
+    filter(Strain == STRAIN & Sex == SEX & Cluster == CLUSTER_NAME)
+  
+  # Subset the expression counts for the genes of interest
+  gene_data <- filtered_data %>%
+    select(starts_with("V")) %>%
+    select(one_of(GENELIST))
+  
+  # Convert to matrix
+  gene_matrix <- as.matrix(gene_data)
+  rownames(gene_matrix) <- filtered_data$Cluster
+  
+  # Plot heatmap
+  pheatmap(gene_matrix, 
+           scale = "row",
+           color = colorRampPalette(c("blue", "white", "red"))(100),
+           main = TITLE,
+           cluster_rows = FALSE,
+           cluster_cols = FALSE,
+           display_numbers = TRUE,
+           fontsize_row = 10,
+           fontsize_col = 10,
+           border_color = NA)
+}
+
+# Example usage:
+# Assuming `EXPR_COUNT` is your expression matrix
+# and you are interested in genes "Gene1", "Gene2", and "Gene3"
+# and you want to visualize data for strain "Strain1", sex "Male", and cluster "Cluster1"
+heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
+                         GENELIST = III_Marker_Genes, 
+                         STRAIN = "DGRP-551",
+                         SEX = "female", 
+                         CLUSTER_NAME = "Plasmatocytes", 
+                         TITLE = "Heatmap of Plasmatocytes")
+
+
+
+
+#############################################################################################################################################
+
+
 
 
 
