@@ -1,3 +1,9 @@
+# pdf output
+/PDF/
+
+# downloaded files
+/DwnFile/
+
 # History files
 .Rhistory
 .Rapp.history
