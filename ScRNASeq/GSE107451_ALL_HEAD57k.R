@@ -180,8 +180,10 @@ dev.off()
 # 
 # View(all_markers_dotplot$data)
 # 
-#############################################################################################################################################
 
+
+ALL_HEAD_57k3 <- JoinLayers(ALL_HEAD_57k3)
+#############################################################################################################################################
 
 
 
@@ -264,7 +266,7 @@ for (i in 1:length(III_Marker_Genes)) {
                              cols = c("grey","darkred"),
                              reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
                              keep.scale = "feature",
-                             pt.size = 1
+                             pt.size = 0.5
                              )
   ggsave(tmp,
          device = "pdf",
@@ -272,8 +274,8 @@ for (i in 1:length(III_Marker_Genes)) {
            "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
            III_Marker_Genes[i],
            "_Plasmatocytes.pdf"),
-         width = 15,
-         height = 10
+         width = 9,
+         height = 6
   )
   }
 
@@ -284,9 +286,9 @@ for (i in 1:length(III_Marker_Genes)) {
                              features = III_Marker_Genes[i],
                              cols = c("grey","darkred"),
                              reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
-                             keep.scale = "all",
+                             keep.scale = NULL,#set to null so it is easier to see if an III marker is expressed at a certain age
                              split.by = "Age",
-                             pt.size = 1
+                             pt.size = 0.5
   )+
     patchwork::plot_layout(ncol = 3, nrow = 3)& theme(legend.position = "right")
   
@@ -296,8 +298,107 @@ for (i in 1:length(III_Marker_Genes)) {
            "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
            III_Marker_Genes[i],
            "_Plasmatocytes_Age.pdf"),
-         width = 15,
-         height = 10,
+         width = 9,
+         height = 6,
+         limitsize = FALSE
+  )
+}
+
+#partial feature plot of III markers in plasmatocytes cluster DGRP-551 female and split by Age
+for (i in 1:length(III_Marker_Genes)) {
+  tmp <- Seurat::FeaturePlot(subset(ALL_HEAD_57k3,annotation=="Plasmatocytes"&Genotype=="DGRP-551"&sex=="female"),
+                             features = III_Marker_Genes[i],
+                             cols = c("grey","darkred"),
+                             reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
+                             keep.scale = NULL,#set to null so it is easier to see if an III marker is expressed at a certain age
+                             split.by = "Age",
+                             pt.size = 0.5
+  )+
+    patchwork::plot_layout(ncol = 3, nrow = 3)& theme(legend.position = "right")
+  
+  ggsave(tmp,
+         device = "pdf",
+         file= paste0(
+           "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
+           III_Marker_Genes[i],
+           "_Plasmatocytes_Age_DGRP551_female.pdf"),
+         width = 9,
+         height = 6,
+         limitsize = FALSE
+  )
+}
+
+
+#partial feature plot of III markers in plasmatocytes cluster DGRP-551 male and split by Age
+for (i in 1:length(III_Marker_Genes)) {
+  tmp <- Seurat::FeaturePlot(subset(ALL_HEAD_57k3,annotation=="Plasmatocytes"&Genotype=="DGRP-551"&sex=="male"),
+                             features = III_Marker_Genes[i],
+                             cols = c("grey","darkred"),
+                             reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
+                             keep.scale = NULL,#set to null so it is easier to see if an III marker is expressed at a certain age
+                             split.by = "Age",
+                             pt.size = 0.5
+  )+
+    patchwork::plot_layout(ncol = 3, nrow = 3)& theme(legend.position = "right")
+  
+  ggsave(tmp,
+         device = "pdf",
+         file= paste0(
+           "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
+           III_Marker_Genes[i],
+           "_Plasmatocytes_Age_DGRP551_male.pdf"),
+         width = 9,
+         height = 6,
+         limitsize = FALSE
+  )
+}
+
+
+#partial feature plot of III markers in plasmatocytes cluster w1118 female and split by Age
+for (i in 1:length(III_Marker_Genes)) {
+  tmp <- Seurat::FeaturePlot(subset(ALL_HEAD_57k3,annotation=="Plasmatocytes"&Genotype=="w1118"&sex=="female"),
+                             features = III_Marker_Genes[i],
+                             cols = c("grey","darkred"),
+                             reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
+                             keep.scale = NULL,#set to null so it is easier to see if an III marker is expressed at a certain age
+                             split.by = "Age",
+                             pt.size = 0.5
+  )+
+    patchwork::plot_layout(ncol = 3, nrow = 3)& theme(legend.position = "right")
+  
+  ggsave(tmp,
+         device = "pdf",
+         file= paste0(
+           "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
+           III_Marker_Genes[i],
+           "_Plasmatocytes_Age_w1118_female.pdf"),
+         width = 9,
+         height = 6,
+         limitsize = FALSE
+  )
+}
+
+
+#partial feature plot of III markers in plasmatocytes cluster w1118 male and split by Age
+for (i in 1:length(III_Marker_Genes)) {
+  tmp <- Seurat::FeaturePlot(subset(ALL_HEAD_57k3,annotation=="Plasmatocytes"&Genotype=="w1118"&sex=="male"),
+                             features = III_Marker_Genes[i],
+                             cols = c("grey","darkred"),
+                             reduction = "tSNE_ALL_HEAD_57k_Author_cluster",
+                             keep.scale = NULL,#set to null so it is easier to see if an III marker is expressed at a certain age
+                             split.by = "Age",
+                             pt.size = 0.5
+  )+
+    patchwork::plot_layout(ncol = 3, nrow = 3)& theme(legend.position = "right")
+  
+  ggsave(tmp,
+         device = "pdf",
+         file= paste0(
+           "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Featureplot/partial_Plasmatocytes/",
+           III_Marker_Genes[i],
+           "_Plasmatocytes_Age_w1118_male.pdf"),
+         width = 9,
+         height = 6,
          limitsize = FALSE
   )
 }
@@ -427,6 +528,380 @@ openxlsx::write.xlsx(cell_numbers,"cell_numbers.xlsx",rowNames=F)
 #############################################################################################################################################
 
 
+
+
+##################################percentage expressing function ###########################################################################################################
+#calculate the persentage of cells expressing different genes within a subset of a seurat object of a certain Strain, Sex, Cluster, and Age 
+calculate_gene_expression_percentage <- function(seurat_obj, genes, strain, Sex, cluster, ages) {
+  # Create a data frame to store the results
+  results <- data.frame(
+    Gene = character(),
+    Age = character(),
+    Percentage = numeric(),
+    Cells=numeric(),
+    TotalCells=numeric()
+  )
+  
+  # Iterate over each gene
+  for (gene_i in genes) {
+    # Iterate over each age
+    for (age_i in ages) {
+      # Subset the Seurat object based on the specified metadata
+      subset_cells <- subset(seurat_obj,Genotype == strain & sex == Sex & annotation == cluster & Age == age_i)
+      
+      
+      # Calculate the number of cells expressing the gene (expression > 0)
+      
+      expressing_cells <-
+        sum(
+          as.data.frame(
+            FetchData(subset_cells, vars = gene_i,layer = "counts")
+            ) > 0
+          )
+      
+      
+      # Calculate the total number of cells in the subset
+      total_cells <- nrow(subset_cells@meta.data)
+      
+      # Calculate the percentage of cells expressing the gene
+      #expression_percentage <- expressing_cells/total_cells*100
+      expression_percentage <- if (total_cells > 0) (expressing_cells / total_cells) * 100 else NA
+      
+      # Add the result to the data frame
+      results <- rbind(
+        results, data.frame(Gene = gene_i,
+                            Age = age_i, 
+                            Percentage = expression_percentage,
+                            Cells=expressing_cells,
+                            TotalCells=total_cells
+                            )
+        )
+    }
+  }
+  
+  return(results)
+}
+
+# Example usage:
+View(
+calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "DGRP-551", 
+  Sex = "female", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,9,15,30,50)
+  )
+)
+
+
+#check with simple code
+#  gene   day  percentage at day 50 in DGRP-551 female in Plasmatocytes
+#SPH93  50 0.05714286
+
+#check cells expressing SPH93 at day 50 in DGRP-551 female in Plasmatocytes
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&sex=="female"&Age=="50"&annotation=="Plasmatocytes")@'meta.data'
+)
+#35 cells in total
+
+#check number of these cell that express SPH93
+sum(
+  FetchData(subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&sex=="female"&Age=="50"&annotation=="Plasmatocytes"),
+            vars = 'SPH93',layer = "counts") > 0
+  )
+
+#2 cells express SPH93 at day 50 in DGRP-551 female in Plasmatocytes
+
+nrow(FetchData(subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&sex=="female"&Age=="50"&annotation=="Plasmatocytes"), vars = 'SPH93'))
+#35 cells in total
+
+
+2/35*100
+#5.714286
+####
+
+#export PercentageExpression_III_Markers_Ages_DGRP551_female_Plasmatocytes
+openxlsx::write.xlsx(calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "DGRP-551", 
+  Sex = "female", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,9,15,30,50)
+),
+"PercentageExpression_III_Markers_Ages_DGRP551_female_Plasmatocytes.xlsx",
+rowNames=F
+)
+
+#export PercentageExpression_III_Markers_Ages_DGRP551_male_Plasmatocytes
+openxlsx::write.xlsx(calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "DGRP-551", 
+  Sex = "male", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,15,30,50)
+),
+"PercentageExpression_III_Markers_Ages_DGRP551_male_Plasmatocytes.xlsx",
+rowNames=F
+)
+
+#export PercentageExpression_III_Markers_Ages_w1118_female_Plasmatocytes
+openxlsx::write.xlsx(calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "w1118", 
+  Sex = "female", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,9,30)
+),
+"PercentageExpression_III_Markers_Ages_w1118_female_Plasmatocytes.xlsx",
+rowNames=F
+)
+#check what is wrong with day 15
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="15"&annotation=="Plasmatocytes")@meta.data
+  )
+#there is only one cell... in w1118 female day 15 Plasmatocytes
+sum(
+  FetchData(subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="15"&annotation=="Plasmatocytes"),
+            vars = 'SPH93') > 0
+)
+
+View(subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="15"&annotation=="Plasmatocytes")@meta.data)
+#check all cells in all ages
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="3"&annotation=="Plasmatocytes")@meta.data
+)#12 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="6"&annotation=="Plasmatocytes")@meta.data
+)#35 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="9"&annotation=="Plasmatocytes")@meta.data
+)#20 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="15"&annotation=="Plasmatocytes")@meta.data
+)#1 cells...
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="female"&Age=="30"&annotation=="Plasmatocytes")@meta.data
+)# 10 cells
+
+
+#export PercentageExpression_III_Markers_Ages_w1118_male_Plasmatocytes
+openxlsx::write.xlsx(calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "w1118", 
+  Sex = "male", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,9,30)
+),
+"PercentageExpression_III_Markers_Ages_w1118_male_Plasmatocytes.xlsx",
+rowNames=F
+)
+
+#check number of cells in all ages, because if there is only one cell, result cannot be generated (Seurat design)
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="male"&Age=="3"&annotation=="Plasmatocytes")@meta.data
+)#11 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="male"&Age=="6"&annotation=="Plasmatocytes")@meta.data
+)#19 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="male"&Age=="9"&annotation=="Plasmatocytes")@meta.data
+)#8 cells
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="male"&Age=="15"&annotation=="Plasmatocytes")@meta.data
+)# 1 cell ...
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&sex=="male"&Age=="30"&annotation=="Plasmatocytes")@meta.data
+)# 3 cells
+#############################################################################################################################################
+
+
+
+############################Look at number of cells in DGRP-551 and w1118#################################################################################################################
+
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="DGRP-551")@meta.data
+)
+#29137 cells in DGRP-551
+
+
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118")@meta.data
+)
+#27765 cells in w1118
+
+###let's check in Plasmatocytes
+
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="DGRP-551"&annotation=="Plasmatocytes")@meta.data
+)
+#200 cells in DGRP-551 in Plasmatocytes
+
+
+nrow(
+  subset(ALL_HEAD_57k3,Genotype=="w1118"&annotation=="Plasmatocytes")@meta.data
+)
+#129 cells in w1118 in Plasmatocytes
+
+nrow(
+  subset(ALL_HEAD_57k3,annotation=="Plasmatocytes")@meta.data
+)
+#329 total cells in plasmatocytes
+
+
+#############################################################################################################################################
+
+
+
+#############################################################################################################################################
+#A function to determine the persentage of plasmatocytes of a specific Strain, sex at different ages
+
+calculate_cell_percentage <- function(seurat_obj, cell_types, strains, sexes) {
+  # Initialize an empty dataframe to store results
+  result_df <- data.frame()
+  
+  # Extract metadata
+  metadata <- seurat_obj@meta.data
+  
+  # Iterate over each combination of strain, sex, and cell type
+  for (strain in strains) {
+    for (sex_i in sexes) {
+      for (cell_type in cell_types) {
+        # Filter metadata for the specific strain and sex
+        filtered_metadata <- metadata %>%
+          filter(Genotype == strain, sex == sex_i)
+        
+        # Group by Age and calculate the percentage of the specified cell type
+        percentage_df <- filtered_metadata %>%
+          group_by(Age) %>%
+          summarise(
+            TotalCells = n(),
+            CellTypeCells = sum(annotation == cell_type),
+            Percentage = (CellTypeCells / TotalCells) * 100
+          ) %>%
+          mutate(Genotype = strain, sex = sex_i, annotation = cell_type)
+        
+        # Append the results to the result_df
+        result_df <- bind_rows(result_df, percentage_df)
+      }
+    }
+  }
+  
+  return(result_df)
+}
+
+# Example usage
+calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                          cell_types = c("Plasmatocytes"),
+                          strains =c("DGRP-551", "w1118"),
+                          sexes = c("female", "male")
+                          )
+#export the result into xlsx
+
+openxlsx::write.xlsx(
+  calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                            cell_types = c("Plasmatocytes"),
+                            strains =c("DGRP-551", "w1118"),
+                            sexes = c("female", "male")
+  ),
+  "Plasmatocytes_percentage_across_ages.xlsx",
+  rowNames=F
+)
+#############################################################################################################################################
+
+
+
+
+
+
+
+
+############################################Barplot of percentage of Plasmatocytes across different ages#################################################################################################
+
+plot_percentage <- function(df, Strain, Cell_type, Sex) {
+  # Filter the dataframe based on the input parameters
+  df_filtered <- df[df$Genotype == Strain & df$annotation == Cell_type & df$sex == Sex, ]
+  
+  # Load necessary library
+  library(ggplot2)
+  
+  # Create the barplot
+  ggplot(df_filtered, aes(x = as.factor(Age), y = Percentage, fill = as.factor(Age))) +
+    geom_bar(stat = "identity") +
+    labs(title = paste("Percentage of", Cell_type, "for", Strain, "(", Sex, ")", "across Ages"),
+         x = "Age",
+         y = "Percentage") +
+    theme_minimal() +
+    theme(legend.position = "none")
+}
+
+# Example of how to use the function
+
+#DGRP-551_female_Plasmatocytes
+pdf(file = "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Barplot/DGRP-551_female_Plasmatocytes.pdf",width = 6,height = 4)
+plot_percentage(calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                                          cell_types = c("Plasmatocytes"),
+                                          strains =c("DGRP-551", "w1118"),
+                                          sexes = c("female", "male")
+                                          ),
+                Strain = "DGRP-551",
+                Cell_type = "Plasmatocytes", 
+                Sex = "female"
+                )
+dev.off()
+
+#DGRP-551_male_Plasmatocytes
+pdf(file = "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Barplot/DGRP-551_male_Plasmatocytes.pdf",width = 6,height = 4)
+plot_percentage(calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                                          cell_types = c("Plasmatocytes"),
+                                          strains =c("DGRP-551", "w1118"),
+                                          sexes = c("female", "male")
+),
+Strain = "DGRP-551",
+Cell_type = "Plasmatocytes", 
+Sex = "male"
+)
+dev.off()
+
+#w1118_female_Plasmatocytes
+pdf(file = "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Barplot/w1118_female_Plasmatocytes.pdf",width = 6,height = 4)
+plot_percentage(calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                                          cell_types = c("Plasmatocytes"),
+                                          strains =c("DGRP-551", "w1118"),
+                                          sexes = c("female", "male")
+),
+Strain = "w1118",
+Cell_type = "Plasmatocytes", 
+Sex = "female"
+)
+dev.off()
+
+#w1118_male_Plasmatocytes
+pdf(file = "/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/Barplot/w1118_male_Plasmatocytes.pdf",width = 6,height = 4)
+plot_percentage(calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                                          cell_types = c("Plasmatocytes"),
+                                          strains =c("DGRP-551", "w1118"),
+                                          sexes = c("female", "male")
+),
+Strain = "w1118",
+Cell_type = "Plasmatocytes", 
+Sex = "male"
+)
+dev.off()
+
+
+
+
+
+
+
+
+
+#############################################################################################################################################
 
 
 
