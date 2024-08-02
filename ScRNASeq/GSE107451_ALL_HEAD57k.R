@@ -8,6 +8,14 @@
 #### 2.3 Evaluate how each cell type contributes to the inflammaging pattern observed in whole head samples.
 
 
+## Dataset
+### GSE107451 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107451 
+### we download the GSE107451_DGRP-551_w1118_WholeBrain_57k_0d_1d_3d_6d_9d_15d_30d_50d_10X_DGEM_MEX.mtx.tsv.tar.gz 
+### which was based on analysis down by the authors of the paper 
+### A Single-Cell Transcriptome Atlas of the Aging Drosophila Brain. 
+###  - Cell 2018 Aug 9;174(4):982-998.e20. PMID: 29909982
+###  - https://pubmed.ncbi.nlm.nih.gov/29909982/
+
 #############################################set working directory and library package################################################################################################
 
 ## run at HiPerGator
