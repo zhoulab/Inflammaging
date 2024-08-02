@@ -1,6 +1,17 @@
+## this is the R script for the analysis of the head ScRNA-Seq data of the GSE107451 
+
+## Objectives: 
+### 1. Monitor the expression pattern of the inflammaging markers across different cell types (clusters) and ages.
+### 2. Identify which cell type(s) account for the inflammaging pattern observed in whole head sampesl.
+#### 2.1 Calculate aggregated expression for individual cluster - function to extract expression of a gene in a particular cluster.
+#### 2.2 Identify which cell cluster demonstrate inflammaging pattern.
+#### 2.3 Evaluate how each cell type contributes to the inflammaging pattern observed in whole head samples.
+
+
 #############################################set working directory and library package################################################################################################
 
-setwd("/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/")
+## run at HiPerGator
+setwd("/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/")  
 load("GSE107451_head_ALL_57k.RData")
 
 
