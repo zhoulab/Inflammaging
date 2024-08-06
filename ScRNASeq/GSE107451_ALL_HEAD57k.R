@@ -1,5 +1,5 @@
 ## this is the R script for the analysis of the head ScRNA-Seq data of the GSE107451 
-#test push change test#
+
 
 ## Objectives: 
 ### 1. Monitor the expression pattern of the inflammaging markers across different cell types (clusters) and ages.
@@ -12,16 +12,19 @@
 ## Dataset
 ### GSE107451 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107451 
 ### we download the GSE107451_DGRP-551_w1118_WholeBrain_57k_0d_1d_3d_6d_9d_15d_30d_50d_10X_DGEM_MEX.mtx.tsv.tar.gz 
+### we used Author's annotation as metadata of this analysis: GSE107451_DGRP-551_w1118_WholeBrain_57k_Metadata.tsv.gz
 ### which was based on analysis down by the authors of the paper 
 ### A Single-Cell Transcriptome Atlas of the Aging Drosophila Brain. 
 ###  - Cell 2018 Aug 9;174(4):982-998.e20. PMID: 29909982
 ###  - https://pubmed.ncbi.nlm.nih.gov/29909982/
-
+### For analysis of scRNAseq data, Seurat V5 is used. For more information, check https://satijalab.org/seurat/, and https://satijalab.org/seurat/articles/install.html for instruction on installation.
 #############################################set working directory and library package################################################################################################
 
 ## run at HiPerGator
 setwd("/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/")  
-load("GSE107451_head_ALL_57k.RData")
+
+#This is the work.image saved
+#load("GSE107451_head_ALL_57k.RData")
 
 
 library(Seurat)
@@ -32,7 +35,6 @@ library(data.table)
 library(tidyverse)
 library(clustree)
 library(openxlsx)
-library(DESeq2)
 library(presto)
 library(EnhancedVolcano)
 library(ggrepel)
@@ -48,8 +50,9 @@ library(gplots)
 
 #############################################Import data and create Seurat object################################################################################################
 
+#import barcode, matrix, and feature files obtained by cellranger under folder GSE107451_DGRP-551_w1118_WholeBrain_57k_0d_1d_3d_6d_9d_15d_30d_50d_10X_DGEM_MEX.mtx.tsv
 ALL_HEAD_57k <- Seurat::Read10X("./GSE107451_DGRP-551_w1118_WholeBrain_57k_0d_1d_3d_6d_9d_15d_30d_50d_10X_DGEM_MEX.mtx.tsv")
-
+#create seurat object, setting minimum standard (57k is filtered dataset by author, no need to filter)
 ALL_HEAD_57k <- CreateSeuratObject(counts = ALL_HEAD_57k,
                                project = "ALL_HEAD_57k_GSE107451_Summer2024", 
                                min.cells = 0,  
@@ -59,14 +62,14 @@ View(ALL_HEAD_57k@meta.data)
 
 #import metadata of author's and add that to Seurat OBJ
 meta_author <- as.data.frame(fread("./GSE107451_DGRP-551_w1118_WholeBrain_57k_Metadata.tsv",header = T))
-
+#check number of cells in the 57k dataset
 table(rownames(ALL_HEAD_57k@meta.data)==meta_author$new_barcode)
 #TRUE 
 #56902 
-# 
 
+#adding new_barcode column in meta.data slot of Seurat OBJ from author's metadata
 ALL_HEAD_57k@meta.data$"new_barcode" <- rownames(ALL_HEAD_57k@meta.data)
-
+#merge author's metadata to the meta.data slot of Seurat OBJ
 ALL_HEAD_57k@meta.data <- cbind(ALL_HEAD_57k@meta.data,meta_author)
 
 #look at the meta.data after adding author's meta data
@@ -101,6 +104,7 @@ View(ALL_HEAD_57k@meta.data)
 
 
 ####################################################Normalization and find clusters under different resolutions#########################################################################################
+###NOTE: Running the standard workflow from normalization, pca, etc.. to tSNE is simply for adding the "reduction" slot in the Seurat OBJ
 # run standard anlaysis workflow (82 PCs is what autho's parameter)
 ALL_HEAD_57k2 <- NormalizeData(ALL_HEAD_57k)
 ALL_HEAD_57k2 <- FindVariableFeatures(ALL_HEAD_57k2)
@@ -136,7 +140,7 @@ ALL_HEAD_57k2@active.ident <- as.factor(ALL_HEAD_57k2@meta.data$res.2)
 #Run tSNE
 ALL_HEAD_57k3 <- RunTSNE(ALL_HEAD_57k2, dims = 1:82, reduction = "pca", reduction.name = "tSNE_ALL_HEAD_57k_Author_cluster",verbose=F,perplexity=30)
 
-
+ 
 #change tSNE coordinates to authors' values (so the topology looks if not the same, very similar)
 table(rownames(ALL_HEAD_57k3@meta.data)%in%rownames(ALL_HEAD_57k3@reductions[["tSNE_ALL_HEAD_57k_Author_cluster"]]@cell.embeddings))
 # TRUE 
