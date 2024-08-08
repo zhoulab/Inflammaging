@@ -7,8 +7,10 @@
 #### 2.1 Calculate aggregated expression for individual cluster - function to extract expression of a gene in a particular cluster.
 #### 2.2 Identify which cell cluster demonstrate inflammaging pattern.
 #### 2.3 Evaluate how each cell type contributes to the inflammaging pattern observed in whole head samples.
+### 3. Identify if the percentage of cells expressing a certain III marker is increased across ages
+### 4. Identify if there is a change in the percentage of plasmatocytes in different strains across ages
 
- 
+
 ## Dataset
 ### GSE107451 https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE107451 
 ### we download the GSE107451_DGRP-551_w1118_WholeBrain_57k_0d_1d_3d_6d_9d_15d_30d_50d_10X_DGEM_MEX.mtx.tsv.tar.gz 
@@ -17,13 +19,78 @@
 ### A Single-Cell Transcriptome Atlas of the Aging Drosophila Brain. 
 ###  - Cell 2018 Aug 9;174(4):982-998.e20. PMID: 29909982
 ###  - https://pubmed.ncbi.nlm.nih.gov/29909982/
-### For analysis of scRNAseq data, Seurat V5 is used. For more information, check https://satijalab.org/seurat/, and https://satijalab.org/seurat/articles/install.html for instruction on installation.
+### For analysis of scRNAseq data, Seurat V5 is used. For more information, check https://satijalab.org/seurat/, and https://satijalab.org/seurat/articles/install.html for specific instruction on installation.
+
+
+## Functions written, primarily used for analyzing this dataset
+###count_cells_subset
+####a function to see number of cells in different Strains, Sex at different Ages
+#### Example usage:
+#### To get the number of cells for a specific strain, sex, age, and cell cluster:
+count_cells_subset(seurat_obj=ALL_HEAD_57k3,
+                                  strain = "DGRP-551",
+                                  sex = "female",
+                                  age = "50",
+                                  cell_cluster = "Plasmatocytes")
+###calculate_gene_expression_percentage
+#### calculate the persentage of cells expressing different genes within a subset of a seurat object of a certain Strain, Sex, Cluster, and Age 
+#### Example usage:
+calculate_gene_expression_percentage(
+  seurat_obj=ALL_HEAD_57k3,
+  genes=III_Marker_Genes, 
+  strain = "DGRP-551", 
+  Sex = "female", 
+  cluster = "Plasmatocytes", 
+  ages = c(3,6,9,15,30,50)
+  )
+###calculate_cell_percentage
+#### A function to determine the persentage of plasmatocytes of a specific Strain, sex at different ages
+#### Example usage
+calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                          cell_types = c("Plasmatocytes"),
+                          strains =c("DGRP-551", "w1118"),
+                          sexes = c("female", "male")
+                          )
+###plot_percentage
+####Barplot of percentage of Plasmatocytes across different ages
+#### Example usage
+#### Barplot of DGRP-551_female_Plasmatocytes
+plot_percentage(calculate_cell_percentage(seurat_obj = ALL_HEAD_57k3,
+                                          cell_types = c("Plasmatocytes"),
+                                          strains =c("DGRP-551", "w1118"),
+                                          sexes = c("female", "male")
+                                          ),
+                Strain = "DGRP-551",
+                Cell_type = "Plasmatocytes", 
+                Sex = "female"
+                )
+###make_heatmap
+####heatmap of pseudo bulk expression to compare with our BulkRNAseq
+####Example usage
+####count_DGRP551_female
+make_heatmap(EXPR_OBJ = count_DGRP551_female[,-c(1:2)],
+             GENELIST = III_Marker_Genes,
+             TITLE = "DGRP551_female"
+             )
+###heatmap_specific_cluster
+####a function to plot heat map of genes at different Age in a specific cell cluster
+####Example Usage
+####Plasmatocytes_DGRP-551_female
+heatmap_specific_cluster(EXPR_COUNT=count_Strain_Sex_Cellcluster_Age,
+                         GENELIST=III_Marker_Genes,
+                         STRAIN = "DGRP-551",
+                         SEX = "female",
+                         CLUSTER_NAME="Plasmatocytes",
+                         AGES = c("3","6","9","15","30","50"),
+                         TITLE = "III_Markers in Plasmatocytes DGRP-551 female"
+                         )
+
 #############################################set working directory and library package################################################################################################
 
-## run at HiPerGator
+## run at HiPerGator (HPG)
 setwd("/orange/zhou/projects/II_Cancer/GSE107451_HEAD_57K_filtered/")  
 
-#This is the work.image saved
+#This is the work.image saved on HPG
 #load("GSE107451_head_ALL_57k.RData")
 
 
@@ -40,9 +107,6 @@ library(EnhancedVolcano)
 library(ggrepel)
 library(gplots)
 #devtools::install_github("immunogenomics/presto")
-
-
-
 #############################################################################################################################################
 
 
@@ -513,7 +577,6 @@ count_cells_subset <- function(seurat_obj, strain = NULL, sex = NULL, age = NULL
 }
 
 # Example usage:
-# Assuming `seurat_obj` is your Seurat object
 # To get the number of cells for a specific strain, sex, age, and cell cluster:
 count_cells_subset(seurat_obj=ALL_HEAD_57k3,
                                   strain = "DGRP-551",
@@ -1645,6 +1708,7 @@ dev.off()
 
 
 ##################################Based on copilot###########################################################################################################
+#NOTE: This function generated by copilot is only for an attempt; It is not used in the real analysis
 #make a function to plot heat map of genes at different Age in a specific cell cluster based on the pseudo-bulk expression of different Strain, Age, Sex, and Cell cluster
 
 # Function to obtain pseudo-bulk expression and plot heatmap
@@ -1688,6 +1752,7 @@ analyze_seurat_object(seurat_object, gene_list_of_interest,
 
 
 ##################################Based on chatgpt###########################################################################################################
+#NOTE: This function generated by chatgpt is only for an attempt; It is not used in the real analysis
 #make a function to plot heat map of genes at different Age in a specific cell cluster based on the pseudo-bulk expression of different Strain, Age, Sex, and Cell cluster
 
 library(Seurat)
@@ -1765,44 +1830,44 @@ plot_heatmap_genes(seurat_obj = ALL_HEAD_57k3,
 
 
 ###################################I asked chatgpt to optmize my function##########################################################################################################
-
+#NOTE: This function generated by chatgpt is only for an attempt; It is not used in the real analysis
 library(dplyr)
 library(pheatmap)
 
-heatmap_specific_cluster <- function(EXPR_COUNT, GENELIST, STRAIN, SEX, CLUSTER_NAME, TITLE) {
-  # Extract metadata from column names
-  metadata <- str_split(colnames(EXPR_COUNT),pattern = "_",4,simplify =T)
-  colnames(metadata) <- c("Strain", "Sex", "Cluster")
-  
-  # Combine EXPR_COUNT and metadata into a single data frame
-  expr_data <- as.data.frame(EXPR_COUNT)
-  expr_data <- bind_cols(metadata, expr_data)
-  
-  # Filter data based on the specified STRAIN, SEX, and CLUSTER_NAME
-  filtered_data <- expr_data %>%
-    filter(Strain == STRAIN & Sex == SEX & Cluster == CLUSTER_NAME)
-  
-  # Subset the expression counts for the genes of interest
-  gene_data <- filtered_data %>%
-    select(starts_with("V")) %>%
-    select(one_of(GENELIST))
-  
-  # Convert to matrix
-  gene_matrix <- as.matrix(gene_data)
-  rownames(gene_matrix) <- filtered_data$Cluster
-  
-  # Plot heatmap
-  pheatmap(gene_matrix, 
-           scale = "row",
-           color = colorRampPalette(c("blue", "white", "red"))(100),
-           main = TITLE,
-           cluster_rows = FALSE,
-           cluster_cols = FALSE,
-           display_numbers = TRUE,
-           fontsize_row = 10,
-           fontsize_col = 10,
-           border_color = NA)
-}
+# heatmap_specific_cluster <- function(EXPR_COUNT, GENELIST, STRAIN, SEX, CLUSTER_NAME, TITLE) {
+#   # Extract metadata from column names
+#   metadata <- str_split(colnames(EXPR_COUNT),pattern = "_",4,simplify =T)
+#   colnames(metadata) <- c("Strain", "Sex", "Cluster")
+#   
+#   # Combine EXPR_COUNT and metadata into a single data frame
+#   expr_data <- as.data.frame(EXPR_COUNT)
+#   expr_data <- bind_cols(metadata, expr_data)
+#   
+#   # Filter data based on the specified STRAIN, SEX, and CLUSTER_NAME
+#   filtered_data <- expr_data %>%
+#     filter(Strain == STRAIN & Sex == SEX & Cluster == CLUSTER_NAME)
+#   
+#   # Subset the expression counts for the genes of interest
+#   gene_data <- filtered_data %>%
+#     select(starts_with("V")) %>%
+#     select(one_of(GENELIST))
+#   
+#   # Convert to matrix
+#   gene_matrix <- as.matrix(gene_data)
+#   rownames(gene_matrix) <- filtered_data$Cluster
+#   
+#   # Plot heatmap
+#   pheatmap(gene_matrix, 
+#            scale = "row",
+#            color = colorRampPalette(c("blue", "white", "red"))(100),
+#            main = TITLE,
+#            cluster_rows = FALSE,
+#            cluster_cols = FALSE,
+#            display_numbers = TRUE,
+#            fontsize_row = 10,
+#            fontsize_col = 10,
+#            border_color = NA)
+# }
 
 # Example usage:
 # Assuming `EXPR_COUNT` is your expression matrix
